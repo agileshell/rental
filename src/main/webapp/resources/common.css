@@ -1,0 +1,311 @@
+/*******************
+ * global
+ *******************/
+body {
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    line-height: 1.72222;
+    color: #797979;
+    background-color: #f9f9f9;
+}
+
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+    font-family: "Microsoft Yahei", "Helvetica Neue", Helvetica, Arial,
+        sans-serif;
+}
+
+a {
+    color: #3c8dbc;
+    text-decoration: none;
+    -webkit-transition: 0.25s;
+    transition: 0.25s;
+}
+
+a:hover, a:focus {
+    color: #67a8ce;
+    text-decoration: none;
+}
+
+a:focus {
+    outline: none;
+}
+
+/*******************
+ * btn
+ *******************/
+.btn-success {
+    color: #fff;
+    background-color: #3c8dbc;
+    border-color: #3c8dbc;
+}
+
+.btn-success:hover, .btn-success:focus, .btn-success:active,
+    .btn-success.active, .open .dropdown-toggle.btn-success {
+    color: #fff;
+    background-color: #67a8ce;
+    border-color: #67a8ce;
+}
+
+/*******************
+ * form
+ *******************/
+form .required-flag {
+    color: red;
+}
+
+form .validate-input {
+    width: 30%;
+    float: left;
+}
+
+form .input-col-s {
+    width: 13%;
+    float: left;
+}
+
+form .input-col-m {
+    width: 39%;
+    float: left;
+}
+
+form .input-col-l {
+    width: 78%;
+    float: left;
+}
+
+form label[class="error"], form label[class="error-message"] {
+    color: #a94442;
+    line-height: 34px;
+    margin-left: 10px;
+    margin-bottom: 0;
+}
+
+form .help-block {
+    margin-bottom: 0px;
+}
+
+form .form-adapt {
+    margin-top: 3px;
+}
+
+form .form-adapt label {
+    font-weight: normal;
+    cursor: pointer;
+}
+
+form .required-flag {
+    color: red;
+}
+
+/*******************
+ * list
+ *******************/
+.list-title {
+    float: left;
+}
+
+.list-count {
+    float: left;
+    margin-top: 20px;
+    margin-left: 10px;
+}
+
+/*******************
+ * search
+ *******************/
+.searchForm {
+    margin-bottom: 5px;
+}
+
+.searchForm label {
+    line-height: 34px;
+    padding: 0px;
+}
+
+.searchForm .form-group {
+    width: 37%;
+}
+
+.searchForm .submitSection {
+    width: 10%;
+}
+
+.searchForm .submit {
+    margin-top: -5px;
+}
+
+/*******************
+ * table
+ *******************/
+.table-list {
+    table-layout: fixed;
+}
+
+.table-list th {
+    color: #4ABCB4;
+}
+
+.table-list td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.table-list tr.odd {
+    background-color: #ACE2DA;
+}
+
+.table-list tr.even {
+    background-color: white;
+}
+
+.sorting {
+    background: url('images/sort_both.png') no-repeat center right;
+}
+
+.sorting_desc {
+    background: url('images/sort_desc.png') no-repeat center right;
+}
+
+.sorting_asc {
+    background: url('images/sort_asc.png') no-repeat center right;
+}
+
+/*******************
+ * common
+ ******************/
+.no-margin {
+    margin: 0px !important;
+}
+
+.center {
+    text-align: center;
+}
+
+textarea {
+    resize: none;
+}
+
+.row {
+    margin-right: 15px;
+    margin-left: 15px;
+}
+
+.box {
+    position: relative;
+    background: #ffffff;
+    border-top: 2px solid #c1c1c1;
+    margin-bottom: 20px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    width: 100%;
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.box .box-header {
+    position: relative;
+    -webkit-border-top-left-radius: 3px;
+    -webkit-border-top-right-radius: 3px;
+    -webkit-border-bottom-right-radius: 0;
+    -webkit-border-bottom-left-radius: 0;
+    -moz-border-radius-topleft: 3px;
+    -moz-border-radius-topright: 3px;
+    -moz-border-radius-bottomright: 0;
+    -moz-border-radius-bottomleft: 0;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+    border-bottom: 0px solid #f4f4f4;
+    color: #444;
+}
+
+.box .box-header>.fa, .box .box-header>.glyphicon, .box .box-header>.ion,
+    .box .box-header .box-title {
+    display: inline-block;
+    padding: 10px 10px 10px 10px;
+    margin: 0;
+    font-size: 20px;
+    font-weight: 400;
+    float: left;
+    cursor: default;
+}
+
+.box .box-search {
+    padding: 20px 0 0 10px;
+}
+
+.box .box-operation {
+    padding-right: 20px;
+}
+
+.box .box-header:before, .box .box-header:after {
+    display: table;
+    content: " ";
+}
+
+.box .box-header:after {
+    clear: both;
+}
+
+.box .box-body {
+    padding: 10px;
+    -webkit-border-top-left-radius: 0;
+    -webkit-border-top-right-radius: 0;
+    -webkit-border-bottom-right-radius: 3px;
+    -webkit-border-bottom-left-radius: 3px;
+    -moz-border-radius-topleft: 0;
+    -moz-border-radius-topright: 0;
+    -moz-border-radius-bottomright: 3px;
+    -moz-border-radius-bottomleft: 3px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 3px;
+    border-bottom-left-radius: 3px;
+}
+
+.box .box-footer {
+    border-top: 1px solid #f4f4f4;
+    -webkit-border-top-left-radius: 0;
+    -webkit-border-top-right-radius: 0;
+    -webkit-border-bottom-right-radius: 3px;
+    -webkit-border-bottom-left-radius: 3px;
+    -moz-border-radius-topleft: 0;
+    -moz-border-radius-topright: 0;
+    -moz-border-radius-bottomright: 3px;
+    -moz-border-radius-bottomleft: 3px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 3px;
+    border-bottom-left-radius: 3px;
+    padding: 10px;
+    background-color: #ffffff;
+}
+
+.box .form-group .form-control {
+    width: 60%;
+}
+
+.table .operation-part a .glyphicon:before {
+    vertical-align: middle;
+    padding-right: 5px;
+}
+
+.table .operation-part a .glyphicon:hover, .table .operation-part a .glyphicon:focus,
+    .table .operation-part a .glyphicon:active {
+    background-color: #bcc2cb;
+    color: #fff;
+}
+
+.table .operation-part a .glyphicon {
+    width: 26px;
+    height: 26px;
+    font-size: 12px;
+    padding-top: 4px;
+    padding-left: 5px;
+    color: #6e7d91;
+    background-color: #fff;
+    border: 1px solid #c9ced6;
+    border-radius: 50%;
+}
