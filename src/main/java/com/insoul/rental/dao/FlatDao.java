@@ -1,7 +1,9 @@
 package com.insoul.rental.dao;
 
 import com.insoul.rental.criteria.FlatCriteria;
+import com.insoul.rental.criteria.FlatStatisticCriteria;
 import com.insoul.rental.model.Flat;
+import com.insoul.rental.model.FlatStatistic;
 import com.insoul.rental.model.Pagination;
 
 public interface FlatDao {
@@ -19,4 +21,6 @@ public interface FlatDao {
     void unRent(int flatId);
 
     int countFlat(Boolean hasRent);
+
+    Pagination<FlatStatistic> flatStatistic(FlatStatisticCriteria criteria);
 }

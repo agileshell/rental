@@ -1,6 +1,7 @@
 package com.insoul.rental.service.impl;
 
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -11,11 +12,11 @@ import org.springframework.stereotype.Service;
 
 import com.insoul.rental.criteria.FlatCriteria;
 import com.insoul.rental.criteria.PaginationCriteria;
+import com.insoul.rental.model.FeeStatistics;
 import com.insoul.rental.model.Flat;
+import com.insoul.rental.model.FlatFeeStatistics;
 import com.insoul.rental.model.FlatMeterPaymentHistory;
-import com.insoul.rental.model.FlatMeterPaymentStatus;
 import com.insoul.rental.model.FlatPaymentHistory;
-import com.insoul.rental.model.FlatPaymentStatus;
 import com.insoul.rental.model.FlatRenter;
 import com.insoul.rental.model.Pagination;
 import com.insoul.rental.service.FlatService;
@@ -212,14 +213,12 @@ public class FlatServiceImpl extends BaseServiceImpl implements FlatService {
             return flatVOs;
         }
 
-        Map<Integer, FlatListVO> flatIdFlatMap = new HashMap<Integer, FlatListVO>();
-        List<Integer> flatIds = new ArrayList<Integer>();
+        Map<Integer, FlatListVO> flatMap = new HashMap<Integer, FlatListVO>();
+        List<Integer> flatRenterIds = new ArrayList<Integer>();
 
         for (Flat flat : flats) {
-            int flatId = flat.getFlatId();
-
             FlatListVO vo = new FlatListVO();
-            vo.setFlatId(flatId);
+            vo.setFlatId(flat.getFlatId());
             vo.setName(flat.getName());
             vo.setMonthPrice(flat.getMonthPrice());
             vo.setRenterId(flat.getRenterId());
@@ -228,27 +227,22 @@ public class FlatServiceImpl extends BaseServiceImpl implements FlatService {
 
             flatVOs.add(vo);
 
-            flatIdFlatMap.put(flatId, vo);
-
-            flatIds.add(flatId);
+            int flatRenterId = flat.getFlatRenterId();
+            flatMap.put(flatRenterId, vo);
+            flatRenterIds.add(flatRenterId);
         }
 
-        int quarter = getQuarter();
+        Map<String, Integer> quarterInfo = getQuarterInfo(new Date());
+        int quarter = quarterInfo.get("quarter");
+        String year = quarterInfo.get("year") + "";
 
-        List<FlatPaymentStatus> flatPaymentStatuses = flatPaymentHistoryDao.getFlatPaymentStatus(flatIds, quarter);
-        for (FlatPaymentStatus flatPaymentStatus : flatPaymentStatuses) {
-            if (flatIdFlatMap.containsKey(flatPaymentStatus.getFlatId())) {
-                FlatListVO flatListVO = flatIdFlatMap.get(flatPaymentStatus.getFlatId());
-                flatListVO.setHasPaidRent(flatPaymentStatus.isHasPaidRent());
-            }
-        }
-
-        List<FlatMeterPaymentStatus> flatMeterPaymentStatuses = flatMeterPaymentHistoryDao.getFlatPaymentStatus(
-                flatIds, quarter);
-        for (FlatMeterPaymentStatus flatMeterPaymentStatus : flatMeterPaymentStatuses) {
-            if (flatIdFlatMap.containsKey(flatMeterPaymentStatus.getFlatId())) {
-                FlatListVO flatListVO = flatIdFlatMap.get(flatMeterPaymentStatus.getFlatId());
-                flatListVO.setHasPaidMeter(flatMeterPaymentStatus.isHasPaidRent());
+        List<FlatFeeStatistics> flatFees = flatFeeStatisticsDao.findFlatFeeStatistics(flatRenterIds, year, quarter);
+        for (FlatFeeStatistics flatFee : flatFees) {
+            if (flatMap.containsKey(flatFee.getFlatRenterId())) {
+                FlatListVO flatListVO = flatMap.get(flatFee.getFlatRenterId());
+                flatListVO.setIsPayRent(flatFee.getIsPayRent());
+                flatListVO.setIsPayMeter(flatFee.getIsPayMeter());
+                flatListVO.setStatisticId(flatFee.getId());
             }
         }
 
@@ -262,17 +256,60 @@ public class FlatServiceImpl extends BaseServiceImpl implements FlatService {
             return;
         }
 
+        Map<String, Integer> quarterInfo = getQuarterInfo(rentPayment.getEndDate());
+        int quarter = quarterInfo.get("quarter");
+        String year = quarterInfo.get("year") + "";
+        String month = quarterInfo.get("month") + "";
+
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+
         FlatPaymentHistory flatPaymentHistory = new FlatPaymentHistory();
         flatPaymentHistory.setFlatRenterId(flat.getFlatRenterId());
         flatPaymentHistory.setStartDate(rentPayment.getStartDate());
         flatPaymentHistory.setEndDate(rentPayment.getEndDate());
         flatPaymentHistory.setTotalPrice(rentPayment.getTotalPrice());
         flatPaymentHistory.setComment(rentPayment.getComment());
-        flatPaymentHistory.setCreated(new Timestamp(System.currentTimeMillis()));
+        flatPaymentHistory.setCreated(now);
 
-        flatPaymentHistory.setQuarter(getQuarter());
+        flatPaymentHistory.setQuarter(quarter);
 
         flatPaymentHistoryDao.create(flatPaymentHistory);
+
+        FlatFeeStatistics statistic = flatFeeStatisticsDao.getFlatFeeStatistic(flat.getFlatRenterId(), year, quarter);
+        if (null != statistic) {
+            statistic.setIsPayRent(1);
+            statistic.setRentFee(rentPayment.getTotalPrice());
+            statistic.setTotalFee(statistic.getTotalFee() + rentPayment.getTotalPrice());
+            statistic.setUpdated(now);
+
+            flatFeeStatisticsDao.update(statistic);
+        } else {
+            statistic = new FlatFeeStatistics();
+            statistic.setFlatRenterId(flat.getFlatRenterId());
+            statistic.setYear(year);
+            statistic.setQuarter(quarter);
+
+            statistic.setIsPayRent(1);
+            statistic.setRentFee(rentPayment.getTotalPrice());
+            statistic.setTotalFee(rentPayment.getTotalPrice());
+            statistic.setCreated(now);
+
+            flatFeeStatisticsDao.create(statistic);
+        }
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String recordDate = sdf.format(now);
+        FeeStatistics feeStatistic = feeStatisticsDao.getFeeStatistic(recordDate);
+        if (null == feeStatistic) {
+            feeStatistic = new FeeStatistics();
+            feeStatistic.setRecordDate(recordDate);
+            feeStatistic.setYear(year);
+            feeStatistic.setMonth(month);
+            feeStatistic.setQuarter(quarter);
+            feeStatistic.setCreated(now);
+
+            feeStatisticsDao.create(feeStatistic);
+        }
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -322,6 +359,12 @@ public class FlatServiceImpl extends BaseServiceImpl implements FlatService {
             return;
         }
 
+        Map<String, Integer> quarterInfo = getQuarterInfo(utilitiesPayment.getRecordDate());
+        int quarter = quarterInfo.get("quarter");
+        String year = quarterInfo.get("year") + "";
+        String month = quarterInfo.get("month") + "";
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+
         FlatMeterPaymentHistory flatMeterPaymentHistory = new FlatMeterPaymentHistory();
         flatMeterPaymentHistory.setFlatRenterId(flat.getFlatRenterId());
         flatMeterPaymentHistory.setFirstRecord(utilitiesPayment.getFirstRecord());
@@ -330,11 +373,89 @@ public class FlatServiceImpl extends BaseServiceImpl implements FlatService {
         flatMeterPaymentHistory.setTotalPrice(utilitiesPayment.getTotalPrice());
         flatMeterPaymentHistory.setComment(utilitiesPayment.getComment());
         flatMeterPaymentHistory.setRecordDate(utilitiesPayment.getRecordDate());
-        flatMeterPaymentHistory.setCreated(new Timestamp(System.currentTimeMillis()));
+        flatMeterPaymentHistory.setCreated(now);
 
-        flatMeterPaymentHistory.setQuarter(getQuarter());
+        flatMeterPaymentHistory.setQuarter(quarter);
 
         flatMeterPaymentHistoryDao.create(flatMeterPaymentHistory);
+
+        FlatFeeStatistics statistic = flatFeeStatisticsDao.getFlatFeeStatistic(flat.getFlatRenterId(), year, quarter);
+        if (null != statistic) {
+            statistic.setIsPayMeter(1);
+            statistic.setMeterFee(utilitiesPayment.getTotalPrice());
+            statistic.setTotalFee(statistic.getTotalFee() + utilitiesPayment.getTotalPrice());
+            statistic.setUpdated(now);
+
+            flatFeeStatisticsDao.update(statistic);
+        } else {
+            statistic = new FlatFeeStatistics();
+            statistic.setFlatRenterId(flat.getFlatRenterId());
+            statistic.setYear(year);
+            statistic.setQuarter(quarter);
+
+            statistic.setIsPayMeter(1);
+            statistic.setMeterFee(utilitiesPayment.getTotalPrice());
+            statistic.setTotalFee(utilitiesPayment.getTotalPrice());
+            statistic.setCreated(now);
+
+            flatFeeStatisticsDao.create(statistic);
+        }
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String recordDate = sdf.format(now);
+        FeeStatistics feeStatistic = feeStatisticsDao.getFeeStatistic(recordDate);
+        if (null == feeStatistic) {
+            feeStatistic = new FeeStatistics();
+            feeStatistic.setRecordDate(recordDate);
+            feeStatistic.setYear(year);
+            feeStatistic.setMonth(month);
+            feeStatistic.setQuarter(quarter);
+            feeStatistic.setCreated(now);
+
+            feeStatisticsDao.create(feeStatistic);
+        }
+    }
+
+    @Override
+    public int confirmPay(int statisticId, String type) {
+        FlatFeeStatistics statistic = flatFeeStatisticsDao.getFlatFeeStatistic(statisticId);
+        if (null == statistic) {
+            return 0;
+        }
+
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+
+        if (type.equals("rent")) {
+            statistic.setIsPayRent(2);
+            if (statistic.getIsPayMeter() == 2) {
+                statistic.setIsPayAll(2);
+            }
+        } else if (type.equals("meter")) {
+            statistic.setIsPayMeter(2);
+            if (statistic.getIsPayRent() == 2) {
+                statistic.setIsPayAll(2);
+            }
+        }
+        statistic.setUpdated(now);
+        flatFeeStatisticsDao.update(statistic);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String recordDate = sdf.format(now);
+        FeeStatistics feeStatistic = feeStatisticsDao.getFeeStatistic(recordDate);
+        if (null != feeStatistic) {
+            if (type.equals("rent")) {
+                feeStatistic.setFlatRentFee(feeStatistic.getFlatRentFee() + statistic.getRentFee());
+                feeStatistic.setTotalFee(feeStatistic.getTotalFee() + statistic.getRentFee());
+            } else if (type.equals("meter")) {
+                feeStatistic.setFlatMeterFee(feeStatistic.getFlatMeterFee() + statistic.getMeterFee());
+                feeStatistic.setTotalFee(feeStatistic.getTotalFee() + statistic.getMeterFee());
+            }
+            feeStatistic.setUpdated(now);
+
+            feeStatisticsDao.update(feeStatistic);
+        }
+
+        return 1;
     }
 
     @Override
@@ -388,6 +509,22 @@ public class FlatServiceImpl extends BaseServiceImpl implements FlatService {
         }
 
         return flatMeterPaymentHistoryListVOs;
+    }
+
+    @Override
+    public void generateFlatFeeStatistics(String year, int quarter) {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+
+        List<Integer> flatRenterIds = flatFeeStatisticsDao.findFlatRenterIds(year, quarter);
+        for (Integer flatRenterId : flatRenterIds) {
+            FlatFeeStatistics statistic = new FlatFeeStatistics();
+            statistic.setFlatRenterId(flatRenterId);
+            statistic.setYear(year);
+            statistic.setQuarter(quarter);
+            statistic.setCreated(now);
+
+            flatFeeStatisticsDao.create(statistic);
+        }
     }
 
 }

@@ -5,15 +5,14 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Repository;
 
 import com.insoul.rental.criteria.PaginationCriteria;
 import com.insoul.rental.dao.StallPaymentHistoryDao;
 import com.insoul.rental.model.Pagination;
 import com.insoul.rental.model.StallPaymentHistory;
-import com.insoul.rental.model.StallPaymentStatus;
 
 @Repository
 public class StallPaymentHistoryDaoImpl extends BaseDaoImpl implements StallPaymentHistoryDao {
@@ -28,38 +27,10 @@ public class StallPaymentHistoryDaoImpl extends BaseDaoImpl implements StallPaym
         args.add(stallPaymentHistory.getEndDate());
         args.add(stallPaymentHistory.getQuarter());
         args.add(stallPaymentHistory.getTotalPrice());
-        args.add(stallPaymentHistory.getComment());
+        args.add(StringUtils.isNotBlank(stallPaymentHistory.getComment()) ? stallPaymentHistory.getComment() : "");
         args.add(stallPaymentHistory.getCreated());
 
         this.jdbcTemplate.update(sql.toString(), args.toArray());
-    }
-
-    public List<StallPaymentStatus> getStallPaymentStatus(List<Integer> ids, int quarter) {
-        if (null == ids || ids.isEmpty()) {
-            return new ArrayList<StallPaymentStatus>();
-        }
-
-        String sql = "SELECT s.stall_id, sph.stall_renter_id FROM stall s LEFT JOIN stall_payment_history sph ON s.stall_renter_id = sph.stall_renter_id WHERE sph.quarter = :quarter AND s.stall_id IN(:ids) GROUP BY s.stall_id";
-        MapSqlParameterSource parameters = new MapSqlParameterSource();
-        parameters.addValue("quarter", quarter);
-        parameters.addValue("ids", ids);
-        List<StallPaymentStatus> list = this.namedJdbcTemplate.query(sql, parameters, new StallPaymentStatusMapper());
-
-        return list;
-    }
-
-    private static final class StallPaymentStatusMapper implements RowMapper<StallPaymentStatus> {
-        public StallPaymentStatus mapRow(ResultSet rs, int rowNum) throws SQLException {
-            StallPaymentStatus status = new StallPaymentStatus();
-            status.setStallId(rs.getInt("stall_id"));
-            if (0 != rs.getInt("stall_renter_id")) {
-                status.setHasPaidRent(true);
-            } else {
-                status.setHasPaidRent(false);
-            }
-
-            return status;
-        }
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes", "deprecation" })

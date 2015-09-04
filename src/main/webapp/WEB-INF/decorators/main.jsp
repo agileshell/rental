@@ -83,6 +83,18 @@
                         </li>
                         <li class="treeview active">
                             <a href="#">
+                                <i class="fa fa-cog"></i> <span>统计信息</span>
+                                <i class="fa fa-angle-left pull-right"></i>
+                            </a>
+                            <ul class="treeview-menu">
+                                <li><a href="stall/statistic"><i class="fa fa-angle-double-right"></i> 摊位统计</a></li>
+                                <li><a href="flat/statistic"><i class="fa fa-angle-double-right"></i> 公寓统计</a></li>
+                                <li><a href="fee/annual"><i class="fa fa-angle-double-right"></i> 年度统计</a></li>
+                                <li><a href="fee/quarter"><i class="fa fa-angle-double-right"></i> 季度统计</a></li>
+                            </ul>
+                        </li>
+                        <li class="treeview active">
+                            <a href="#">
                                 <i class="fa fa-cog"></i> <span>系统设置</span>
                                 <i class="fa fa-angle-left pull-right"></i>
                             </a>

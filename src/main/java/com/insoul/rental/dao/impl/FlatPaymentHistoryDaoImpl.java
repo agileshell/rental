@@ -5,14 +5,13 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Repository;
 
 import com.insoul.rental.criteria.PaginationCriteria;
 import com.insoul.rental.dao.FlatPaymentHistoryDao;
 import com.insoul.rental.model.FlatPaymentHistory;
-import com.insoul.rental.model.FlatPaymentStatus;
 import com.insoul.rental.model.Pagination;
 
 @Repository
@@ -29,39 +28,10 @@ public class FlatPaymentHistoryDaoImpl extends BaseDaoImpl implements FlatPaymen
         args.add(flatPaymentHistory.getEndDate());
         args.add(flatPaymentHistory.getQuarter());
         args.add(flatPaymentHistory.getTotalPrice());
-        args.add(flatPaymentHistory.getComment());
+        args.add(StringUtils.isNotBlank(flatPaymentHistory.getComment()) ? flatPaymentHistory.getComment() : "");
         args.add(flatPaymentHistory.getCreated());
 
         this.jdbcTemplate.update(sql.toString(), args.toArray());
-    }
-
-    @Override
-    public List<FlatPaymentStatus> getFlatPaymentStatus(List<Integer> ids, int quarter) {
-        if (null == ids || ids.isEmpty()) {
-            return new ArrayList<FlatPaymentStatus>();
-        }
-
-        String sql = "SELECT f.flat_id, fph.flat_renter_id FROM flat f LEFT JOIN flat_payment_history fph ON f.flat_renter_id = fph.flat_renter_id WHERE fph.quarter = :quarter AND f.flat_id IN(:ids) GROUP BY f.flat_id";
-        MapSqlParameterSource parameters = new MapSqlParameterSource();
-        parameters.addValue("quarter", quarter);
-        parameters.addValue("ids", ids);
-
-        List<FlatPaymentStatus> list = this.namedJdbcTemplate.query(sql, parameters,
-                new RowMapper<FlatPaymentStatus>() {
-                    public FlatPaymentStatus mapRow(ResultSet rs, int rowNumber) throws SQLException {
-                        FlatPaymentStatus status = new FlatPaymentStatus();
-                        status.setFlatId(rs.getInt("flat_id"));
-                        if (0 != rs.getInt("flat_renter_id")) {
-                            status.setHasPaidRent(true);
-                        } else {
-                            status.setHasPaidRent(false);
-                        }
-
-                        return status;
-                    }
-                });
-
-        return list;
     }
 
     @SuppressWarnings({ "unchecked", "deprecation", "rawtypes" })

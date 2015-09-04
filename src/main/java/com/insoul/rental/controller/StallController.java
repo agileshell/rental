@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -66,6 +67,9 @@ public class StallController extends BaseController {
     private RenterService renterService;
 
     @Autowired
+    protected SystemSettingService systemSettingService;
+
+    @Autowired
     private StallDao stallDao;
 
     @Autowired
@@ -79,9 +83,6 @@ public class StallController extends BaseController {
 
     @Autowired
     private SubareaDao subareaDao;
-
-    @Autowired
-    private SystemSettingService systemSettingService;
 
     @RequestMapping("/list")
     public String listStall(@ModelAttribute StallListRequest stallListRequest, Model model) {
@@ -172,6 +173,10 @@ public class StallController extends BaseController {
         model.addAttribute("stallName", subarea.getName() + stall.getName());
         model.addAttribute("monthPrice", stall.getMonthPrice());
 
+        Map<String, String> quarters = getQuarterStartEnd(new Date());
+        model.addAttribute("startDate", quarters.get("startDate"));
+        model.addAttribute("endDate", quarters.get("endDate"));
+
         return "stall/pay_rent";
     }
 
@@ -199,6 +204,10 @@ public class StallController extends BaseController {
         Map<String, String> settings = systemSettingService.getSettings();
         String watermeter = settings.get(SystemSettingPath.WATERMETER);
         model.addAttribute("watermeter", watermeter);
+
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        String date = format.format(new Date());
+        model.addAttribute("recordDate", date);
 
         return "stall/pay_watermeter";
     }
@@ -228,6 +237,10 @@ public class StallController extends BaseController {
         String meter = settings.get(SystemSettingPath.METER);
         model.addAttribute("meter", meter);
 
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        String date = format.format(new Date());
+        model.addAttribute("recordDate", date);
+
         return "stall/pay_meter";
     }
 
@@ -236,6 +249,22 @@ public class StallController extends BaseController {
         stallService.payMeter(stallId, utilitiesPayment);
 
         return "redirect:/stall/listMeterpaymentHistory?stallId=" + stallId;
+    }
+
+    @RequestMapping(value = "/confirmPay")
+    @ResponseBody
+    public Map<String, Object> confirmPay(int statisticId, String type) {
+        int status = stallService.confirmPay(statisticId, type);
+
+        Map<String, Object> result = new HashMap<String, Object>();
+        if (status > 0) {
+            result.put("status", ResponseStatus.SUCCEED.getValue());
+        } else {
+            result.put("status", ResponseStatus.FAILED.getValue());
+            result.put("error_code", status);
+        }
+
+        return result;
     }
 
     @RequestMapping("/listRentpaymentHistory")

@@ -171,9 +171,9 @@
         <dependency>
             <groupId>com.jacob</groupId>
             <artifactId>com-jacob</artifactId>
-            <version>1.18</version>
+            <version>1.15</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/src/main/webapp/WEB-INF/lib/jacob.jar</systemPath>
+            <systemPath>${project.basedir}/src/main/webapp/WEB-INF/lib/jacob-1.15.jar</systemPath>
         </dependency>
     </dependencies>
 

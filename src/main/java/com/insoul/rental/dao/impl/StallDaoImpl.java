@@ -17,9 +17,11 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import com.insoul.rental.criteria.StallCriteria;
+import com.insoul.rental.criteria.StallStatisticCriteria;
 import com.insoul.rental.dao.StallDao;
 import com.insoul.rental.model.Pagination;
 import com.insoul.rental.model.Stall;
+import com.insoul.rental.model.StallStatistic;
 
 @Repository
 public class StallDaoImpl extends BaseDaoImpl implements StallDao {
@@ -176,6 +178,105 @@ public class StallDaoImpl extends BaseDaoImpl implements StallDao {
         int count = this.jdbcTemplate.queryForInt(sql.append(condition).toString(), new Object[] {});
 
         return count;
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override
+    public Pagination<StallStatistic> flatStatistic(StallStatisticCriteria criteria) {
+        List<Object> args = new ArrayList<Object>();
+
+        StringBuilder sqlCountRows = new StringBuilder();
+        sqlCountRows.append("SELECT count(*) FROM stall s LEFT JOIN renter r ON s.renter_id = r.renter_id")
+                .append(" LEFT JOIN stall_fee_statistics sfs ON sfs.stall_renter_id = s.stall_renter_id")
+                .append(" WHERE s.is_deleted = 0 AND s.stall_renter_id IS NOT NULL");
+
+        StringBuilder sqlFetchRows = new StringBuilder();
+        sqlFetchRows
+                .append("SELECT s.stall_id, s.name AS stall_name, r.renter_id, r.name AS renter_name")
+                .append(", sfs.id, sfs.year, sfs.quarter, sfs.is_pay_rent, sfs.is_pay_meter, sfs.is_pay_water, sfs.is_pay_all, sfs.rent_fee, sfs.meter_fee, sfs.water_fee, sfs.total_fee")
+                .append(" FROM stall s LEFT JOIN renter r ON s.renter_id = r.renter_id")
+                .append(" LEFT JOIN stall_fee_statistics sfs ON sfs.stall_renter_id = s.stall_renter_id")
+                .append(" WHERE s.is_deleted = 0 AND s.stall_renter_id IS NOT NULL");
+
+        StringBuilder condition = new StringBuilder();
+        if (criteria.getType().equals("all")) {
+            if (criteria.isPaid()) {
+                condition.append(" AND sfs.is_pay_all = 2");
+            } else {
+                condition.append(" AND sfs.is_pay_all != 2");
+            }
+        } else if (criteria.getType().equals("rent")) {
+            if (criteria.isPaid()) {
+                condition.append(" AND sfs.is_pay_rent = 2");
+            } else {
+                condition.append(" AND sfs.is_pay_rent != 2");
+            }
+        } else if (criteria.getType().equals("meter")) {
+            if (criteria.isPaid()) {
+                condition.append(" AND sfs.is_pay_meter = 2");
+            } else {
+                condition.append(" AND sfs.is_pay_meter != 2");
+            }
+        } else if (criteria.getType().equals("water")) {
+            if (criteria.isPaid()) {
+                condition.append(" AND sfs.is_pay_water = 2");
+            } else {
+                condition.append(" AND sfs.is_pay_water != 2");
+            }
+        }
+
+        if (StringUtils.isNotEmpty(criteria.getYear())) {
+            condition.append(" AND sfs.year = ?");
+            args.add(criteria.getYear());
+        }
+        if (null != criteria.getQuarter() && 0 != criteria.getQuarter()) {
+            condition.append(" AND sfs.quarter = ?");
+            args.add(criteria.getQuarter());
+        }
+        if (StringUtils.isNotEmpty(criteria.getStallName())) {
+            condition.append(" AND s.name LIKE ?");
+            args.add("%" + criteria.getStallName() + "%");
+        }
+        if (StringUtils.isNotEmpty(criteria.getRentor())) {
+            condition.append(" AND r.name LIKE ?");
+            args.add("%" + criteria.getRentor() + "%");
+        }
+
+        @SuppressWarnings("deprecation")
+        int count = this.jdbcTemplate.queryForInt(sqlCountRows.append(condition).toString(), args.toArray());
+
+        if (0 != criteria.getLimit()) {
+            condition.append(" LIMIT ?, ?");
+            args.add(criteria.getOffset());
+            args.add(criteria.getLimit());
+        }
+        List<StallStatistic> list = this.jdbcTemplate.query(sqlFetchRows.append(condition).toString(), args.toArray(),
+                new RowMapper<StallStatistic>() {
+                    public StallStatistic mapRow(ResultSet rs, int rowNumber) throws SQLException {
+                        StallStatistic statistic = new StallStatistic();
+                        statistic.setYear(rs.getString("year"));
+                        statistic.setQuarter(rs.getInt("quarter"));
+
+                        statistic.setStallId(rs.getInt("stall_id"));
+                        statistic.setStallName(rs.getString("stall_name"));
+                        statistic.setRenterId(rs.getInt("renter_id"));
+                        statistic.setRenterName(rs.getString("renter_name"));
+
+                        statistic.setStatisticId(rs.getInt("id"));
+                        statistic.setIsPayRent(rs.getInt("is_pay_rent"));
+                        statistic.setIsPayMeter(rs.getInt("is_pay_meter"));
+                        statistic.setIsPayWater(rs.getInt("is_pay_water"));
+                        statistic.setIsPayAll(rs.getInt("is_pay_all"));
+                        statistic.setRentFee(rs.getFloat("rent_fee"));
+                        statistic.setMeterFee(rs.getFloat("meter_fee"));
+                        statistic.setWaterFee(rs.getFloat("water_fee"));
+                        statistic.setTotalFee(rs.getFloat("total_fee"));
+
+                        return statistic;
+                    }
+                });
+
+        return new Pagination(count, list);
     }
 
 }

@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Repository;
@@ -13,7 +14,6 @@ import com.insoul.rental.criteria.PaginationCriteria;
 import com.insoul.rental.dao.StallUtilitiesPaymentHistoryDao;
 import com.insoul.rental.model.Pagination;
 import com.insoul.rental.model.StallUtilitiesPaymentHistory;
-import com.insoul.rental.model.StallUtilitiesPaymentStatus;
 
 @Repository
 public class StallUtilitiesPaymentHistoryDaoImpl extends BaseDaoImpl implements StallUtilitiesPaymentHistoryDao {
@@ -31,42 +31,12 @@ public class StallUtilitiesPaymentHistoryDaoImpl extends BaseDaoImpl implements 
         args.add(stallUtilitiesPaymentHistory.getQuarter());
         args.add(stallUtilitiesPaymentHistory.getPrice());
         args.add(stallUtilitiesPaymentHistory.getTotalPrice());
-        args.add(stallUtilitiesPaymentHistory.getComment());
+        args.add(StringUtils.isNotBlank(stallUtilitiesPaymentHistory.getComment()) ? stallUtilitiesPaymentHistory
+                .getComment() : "");
         args.add(stallUtilitiesPaymentHistory.getRecordDate());
         args.add(stallUtilitiesPaymentHistory.getCreated());
 
         this.jdbcTemplate.update(sql.toString(), args.toArray());
-    }
-
-    @Override
-    public List<StallUtilitiesPaymentStatus> getStallPaymentStatus(List<Integer> ids, int quarter) {
-        if (null == ids || ids.isEmpty()) {
-            return new ArrayList<StallUtilitiesPaymentStatus>();
-        }
-
-        String sql = "SELECT s.stall_id, suph.stall_renter_id, suph.`type` FROM stall s LEFT JOIN stall_utilities_payment_history suph ON s.stall_renter_id = suph.stall_renter_id WHERE suph.quarter = :quarter AND s.stall_id IN(:ids) GROUP BY s.stall_id, suph.`type`";
-        MapSqlParameterSource parameters = new MapSqlParameterSource();
-        parameters.addValue("quarter", quarter);
-        parameters.addValue("ids", ids);
-        List<StallUtilitiesPaymentStatus> list = this.namedJdbcTemplate.query(sql, parameters,
-                new StallPaymentStatusMapper());
-
-        return list;
-    }
-
-    private static final class StallPaymentStatusMapper implements RowMapper<StallUtilitiesPaymentStatus> {
-        public StallUtilitiesPaymentStatus mapRow(ResultSet rs, int rowNum) throws SQLException {
-            StallUtilitiesPaymentStatus status = new StallUtilitiesPaymentStatus();
-            status.setStallId(rs.getInt("stall_id"));
-            status.setType(rs.getInt("type"));
-            if (0 != rs.getInt("stall_renter_id")) {
-                status.setHasPaid(true);
-            } else {
-                status.setHasPaid(false);
-            }
-
-            return status;
-        }
     }
 
     @Override

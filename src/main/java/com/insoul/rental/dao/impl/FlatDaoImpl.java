@@ -17,8 +17,10 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import com.insoul.rental.criteria.FlatCriteria;
+import com.insoul.rental.criteria.FlatStatisticCriteria;
 import com.insoul.rental.dao.FlatDao;
 import com.insoul.rental.model.Flat;
+import com.insoul.rental.model.FlatStatistic;
 import com.insoul.rental.model.Pagination;
 
 @Repository
@@ -177,4 +179,94 @@ public class FlatDaoImpl extends BaseDaoImpl implements FlatDao {
         return count;
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override
+    public Pagination<FlatStatistic> flatStatistic(FlatStatisticCriteria criteria) {
+        List<Object> args = new ArrayList<Object>();
+
+        StringBuilder sqlCountRows = new StringBuilder();
+        sqlCountRows.append("SELECT count(*) FROM flat f LEFT JOIN renter r ON f.renter_id = r.renter_id")
+                .append(" LEFT JOIN flat_fee_statistics ffs ON ffs.flat_renter_id = f.flat_renter_id")
+                .append(" WHERE f.is_deleted = 0 AND f.flat_renter_id IS NOT NULL");
+
+        StringBuilder sqlFetchRows = new StringBuilder();
+        sqlFetchRows
+                .append("SELECT f.flat_id, f.name AS flat_name, r.renter_id, r.name AS renter_name")
+                .append(", ffs.id, ffs.year, ffs.quarter, ffs.is_pay_rent, ffs.is_pay_meter, ffs.is_pay_all, ffs.rent_fee, ffs.meter_fee, ffs.total_fee")
+                .append(" FROM flat f LEFT JOIN renter r ON f.renter_id = r.renter_id")
+                .append(" LEFT JOIN flat_fee_statistics ffs ON ffs.flat_renter_id = f.flat_renter_id")
+                .append(" WHERE f.is_deleted = 0 AND f.flat_renter_id IS NOT NULL");
+
+        StringBuilder condition = new StringBuilder();
+        if (criteria.getType().equals("all")) {
+            if (criteria.isPaid()) {
+                condition.append(" AND ffs.is_pay_all = 2");
+            } else {
+                condition.append(" AND ffs.is_pay_all != 2");
+            }
+        } else if (criteria.getType().equals("rent")) {
+            if (criteria.isPaid()) {
+                condition.append(" AND ffs.is_pay_rent = 2");
+            } else {
+                condition.append(" AND ffs.is_pay_rent != 2");
+            }
+        } else if (criteria.getType().equals("meter")) {
+            if (criteria.isPaid()) {
+                condition.append(" AND ffs.is_pay_meter = 2");
+            } else {
+                condition.append(" AND ffs.is_pay_meter != 2");
+            }
+        }
+
+        if (StringUtils.isNotEmpty(criteria.getYear())) {
+            condition.append(" AND ffs.year = ?");
+            args.add(criteria.getYear());
+        }
+        if (null != criteria.getQuarter() && 0 != criteria.getQuarter()) {
+            condition.append(" AND ffs.quarter = ?");
+            args.add(criteria.getQuarter());
+        }
+        if (StringUtils.isNotEmpty(criteria.getFlatName())) {
+            condition.append(" AND f.name LIKE ?");
+            args.add("%" + criteria.getFlatName() + "%");
+        }
+        if (StringUtils.isNotEmpty(criteria.getRentor())) {
+            condition.append(" AND r.name LIKE ?");
+            args.add("%" + criteria.getRentor() + "%");
+        }
+
+        @SuppressWarnings("deprecation")
+        int count = this.jdbcTemplate.queryForInt(sqlCountRows.append(condition).toString(), args.toArray());
+
+        if (0 != criteria.getLimit()) {
+            condition.append(" LIMIT ?, ?");
+            args.add(criteria.getOffset());
+            args.add(criteria.getLimit());
+        }
+        List<FlatStatistic> list = this.jdbcTemplate.query(sqlFetchRows.append(condition).toString(), args.toArray(),
+                new RowMapper<FlatStatistic>() {
+                    public FlatStatistic mapRow(ResultSet rs, int rowNumber) throws SQLException {
+                        FlatStatistic statistic = new FlatStatistic();
+                        statistic.setYear(rs.getString("year"));
+                        statistic.setQuarter(rs.getInt("quarter"));
+
+                        statistic.setFlatId(rs.getInt("flat_id"));
+                        statistic.setFlatName(rs.getString("flat_name"));
+                        statistic.setRenterId(rs.getInt("renter_id"));
+                        statistic.setRenterName(rs.getString("renter_name"));
+
+                        statistic.setStatisticId(rs.getInt("id"));
+                        statistic.setIsPayRent(rs.getInt("is_pay_rent"));
+                        statistic.setIsPayMeter(rs.getInt("is_pay_meter"));
+                        statistic.setIsPayAll(rs.getInt("is_pay_all"));
+                        statistic.setRentFee(rs.getFloat("rent_fee"));
+                        statistic.setMeterFee(rs.getFloat("meter_fee"));
+                        statistic.setTotalFee(rs.getFloat("total_fee"));
+
+                        return statistic;
+                    }
+                });
+
+        return new Pagination(count, list);
+    }
 }

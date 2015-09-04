@@ -42,7 +42,7 @@
                             <div class="input-group-addon">
                                 <i class="fa fa-long-arrow-up"></i>
                             </div>
-                            <input name="startDate" type="text" class="form-control" id="startDate" value="" onFocus="WdatePicker({startDate:'%y-%M-%d',dateFmt:'yyyy-MM-dd',maxDate:'#F{$dp.$D(\'endDate\');}'})">
+                            <input name="startDate" type="text" class="form-control" id="startDate" value="${startDate}" onFocus="WdatePicker({startDate:'%y-%M-%d',dateFmt:'yyyy-MM-dd',maxDate:'#F{$dp.$D(\'endDate\');}'})">
                         </div>
                     </div>
                     <div class="form-group">
@@ -51,7 +51,7 @@
                             <div class="input-group-addon">
                                 <i class="fa fa-long-arrow-down"></i>
                             </div>
-                            <input name="endDate" type="text" class="form-control" id="endDate" value="" onFocus="WdatePicker({startDate:'%y-%M-%d',dateFmt:'yyyy-MM-dd',minDate:'#F{$dp.$D(\'startDate\');}'})">
+                            <input name="endDate" type="text" class="form-control" id="endDate" value="${endDate}" onFocus="WdatePicker({startDate:'%y-%M-%d',dateFmt:'yyyy-MM-dd',minDate:'#F{$dp.$D(\'startDate\');}'})">
                         </div>
                     </div>
                     <div class="form-group">

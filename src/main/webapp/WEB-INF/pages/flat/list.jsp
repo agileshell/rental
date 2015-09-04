@@ -73,23 +73,35 @@
                             <td>${flat.monthPrice}</td>
                             <td>${flat.renterName}</td>
                             <td>
-                                <span class="label ${flat.hasPaidRent == true ? 'label-success' : 'label-danger'}">
-                                    ${flat.hasPaidRent == true ? '已缴纳' : '未缴纳'}
+                                <span class="label ${flat.isPayRent == 2 ? 'label-success' : 'label-danger'}">
+                                    ${flat.isPayRent == 2 ? '已缴纳' : '未缴纳'}
                                 </span>
                                 <c:if test="${flat.renterId >0 }">
-                                    &nbsp;&nbsp;
-                                    <a title="缴纳租金" href="flat/payRentPage?flatId=${flat.flatId}">缴纳租金</a>
+                                    <c:if test="${flat.isPayRent == 0 }">
+                                        &nbsp;&nbsp;
+                                        <a title="租金单" href="flat/payRentPage?flatId=${flat.flatId}">租金单</a>
+                                    </c:if>
+                                    <c:if test="${flat.isPayRent == 1 }">
+                                        &nbsp;&nbsp;
+                                        <a title="确认已缴费" class="confirmPay" data-statistic="${flat.statisticId}" data-type="rent" href="javascript:void(0)">确认已缴费</a>
+                                    </c:if>
                                 </c:if>
                                     &nbsp;&nbsp;
                                     <a title="缴纳历史" href="flat/listRentpaymentHistory?flatId=${flat.flatId}">缴纳历史</a>
                             </td>
                             <td>
-                                <span class="label ${flat.hasPaidMeter == true ? 'label-success' : 'label-danger'}">
-                                    ${flat.hasPaidMeter == true ? '已缴纳' : '未缴纳'}
+                                <span class="label ${flat.isPayMeter == 2 ? 'label-success' : 'label-danger'}">
+                                    ${flat.isPayMeter == 2 ? '已缴纳' : '未缴纳'}
                                 </span>
                                 <c:if test="${flat.renterId >0 }">
-                                    &nbsp;&nbsp;
-                                    <a title="缴纳电费" href="flat/payMeterPage?flatId=${flat.flatId}">缴纳电费</a>
+                                    <c:if test="${flat.isPayMeter == 0 }">
+	                                    &nbsp;&nbsp;
+	                                    <a title="电费单" href="flat/payMeterPage?flatId=${flat.flatId}">电费单</a>
+                                    </c:if>
+                                    <c:if test="${flat.isPayMeter == 1 }">
+                                        &nbsp;&nbsp;
+                                        <a title="确认已缴费" class="confirmPay" data-statistic="${flat.statisticId}" data-type="meter" href="javascript:void(0)">确认已缴费</a>
+                                    </c:if>
                                 </c:if>
                                     &nbsp;&nbsp;
                                     <a title="缴纳历史" href="flat/listMeterpaymentHistory?flatId=${flat.flatId}">缴纳历史</a>

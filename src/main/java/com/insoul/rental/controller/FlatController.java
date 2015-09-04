@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -63,6 +64,9 @@ public class FlatController extends BaseController {
     private RenterService renterService;
 
     @Autowired
+    protected SystemSettingService systemSettingService;
+
+    @Autowired
     private FlatDao flatDao;
 
     @Autowired
@@ -70,9 +74,6 @@ public class FlatController extends BaseController {
 
     @Autowired
     private FlatMeterPaymentHistoryDao flatMeterPaymentHistoryDao;
-
-    @Autowired
-    private SystemSettingService systemSettingService;
 
     @RequestMapping("/list")
     public String listFlat(@ModelAttribute FlatListRequest flatListRequest, Model model) {
@@ -155,6 +156,10 @@ public class FlatController extends BaseController {
         model.addAttribute("flatName", flat.getName());
         model.addAttribute("monthPrice", flat.getMonthPrice());
 
+        Map<String, String> quarters = getQuarterStartEnd(new Date());
+        model.addAttribute("startDate", quarters.get("startDate"));
+        model.addAttribute("endDate", quarters.get("endDate"));
+
         return "flat/pay_rent";
     }
 
@@ -183,6 +188,10 @@ public class FlatController extends BaseController {
         String meter = settings.get(SystemSettingPath.METER);
         model.addAttribute("meter", meter);
 
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        String date = format.format(new Date());
+        model.addAttribute("recordDate", date);
+
         return "flat/pay_meter";
     }
 
@@ -191,6 +200,22 @@ public class FlatController extends BaseController {
         flatService.payMeter(flatId, utilitiesPayment);
 
         return "redirect:/flat/listMeterpaymentHistory?flatId=" + flatId;
+    }
+
+    @RequestMapping(value = "/confirmPay")
+    @ResponseBody
+    public Map<String, Object> confirmPay(int statisticId, String type) {
+        int status = flatService.confirmPay(statisticId, type);
+
+        Map<String, Object> result = new HashMap<String, Object>();
+        if (status > 0) {
+            result.put("status", ResponseStatus.SUCCEED.getValue());
+        } else {
+            result.put("status", ResponseStatus.FAILED.getValue());
+            result.put("error_code", status);
+        }
+
+        return result;
     }
 
     @RequestMapping("/listRentpaymentHistory")

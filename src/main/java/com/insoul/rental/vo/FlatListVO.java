@@ -16,9 +16,11 @@ public class FlatListVO {
 
     private String renterName;
 
-    private boolean hasPaidRent;
+    private int isPayRent;
 
-    private boolean hasPaidMeter;
+    private int isPayMeter;
+
+    private int statisticId;
 
     public int getFlatId() {
         return flatId;
@@ -68,20 +70,28 @@ public class FlatListVO {
         this.renterName = renterName;
     }
 
-    public boolean isHasPaidRent() {
-        return hasPaidRent;
+    public int getIsPayRent() {
+        return isPayRent;
     }
 
-    public void setHasPaidRent(boolean hasPaidRent) {
-        this.hasPaidRent = hasPaidRent;
+    public void setIsPayRent(int isPayRent) {
+        this.isPayRent = isPayRent;
     }
 
-    public boolean isHasPaidMeter() {
-        return hasPaidMeter;
+    public int getIsPayMeter() {
+        return isPayMeter;
     }
 
-    public void setHasPaidMeter(boolean hasPaidMeter) {
-        this.hasPaidMeter = hasPaidMeter;
+    public void setIsPayMeter(int isPayMeter) {
+        this.isPayMeter = isPayMeter;
+    }
+
+    public int getStatisticId() {
+        return statisticId;
+    }
+
+    public void setStatisticId(int statisticId) {
+        this.statisticId = statisticId;
     }
 
 }

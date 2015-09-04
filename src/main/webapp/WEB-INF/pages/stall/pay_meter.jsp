@@ -78,7 +78,7 @@
                             <div class="input-group-addon">
                                 <i class="fa fa-calendar-o"></i>
                             </div>
-                            <input name="recordDate" type="text" class="form-control" id="recordDate" value="" onFocus="WdatePicker({startDate:'%y-%M-%d',dateFmt:'yyyy-MM-dd'})">
+                            <input name="recordDate" type="text" class="form-control" id="recordDate" value="${recordDate}" onFocus="WdatePicker({startDate:'%y-%M-%d',dateFmt:'yyyy-MM-dd'})">
                         </div>
                     </div>
                     <div class="form-group">

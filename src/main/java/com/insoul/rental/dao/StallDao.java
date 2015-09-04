@@ -1,8 +1,10 @@
 package com.insoul.rental.dao;
 
 import com.insoul.rental.criteria.StallCriteria;
+import com.insoul.rental.criteria.StallStatisticCriteria;
 import com.insoul.rental.model.Pagination;
 import com.insoul.rental.model.Stall;
+import com.insoul.rental.model.StallStatistic;
 
 public interface StallDao {
 
@@ -19,4 +21,6 @@ public interface StallDao {
     void unRent(int stallId);
 
     int countStall(Boolean hasRent);
+
+    Pagination<StallStatistic> flatStatistic(StallStatisticCriteria criteria);
 }

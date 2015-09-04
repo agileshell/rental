@@ -4,14 +4,11 @@ import java.util.List;
 
 import com.insoul.rental.criteria.PaginationCriteria;
 import com.insoul.rental.model.FlatMeterPaymentHistory;
-import com.insoul.rental.model.FlatMeterPaymentStatus;
 import com.insoul.rental.model.Pagination;
 
 public interface FlatMeterPaymentHistoryDao {
 
     void create(FlatMeterPaymentHistory flatMeterPaymentHistory);
-
-    List<FlatMeterPaymentStatus> getFlatPaymentStatus(List<Integer> ids, int quarter);
 
     List<FlatMeterPaymentHistory> getFlatMeterPaymentHistory(int flatRenterId);
 

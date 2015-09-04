@@ -1,17 +1,23 @@
 package com.insoul.rental.service.impl;
 
 import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.annotation.Resource;
 
 import org.springframework.stereotype.Service;
 
+import com.insoul.rental.dao.FeeStatisticsDao;
 import com.insoul.rental.dao.FlatDao;
+import com.insoul.rental.dao.FlatFeeStatisticsDao;
 import com.insoul.rental.dao.FlatMeterPaymentHistoryDao;
 import com.insoul.rental.dao.FlatPaymentHistoryDao;
 import com.insoul.rental.dao.FlatRenterDao;
 import com.insoul.rental.dao.RenterDao;
 import com.insoul.rental.dao.StallDao;
+import com.insoul.rental.dao.StallFeeStatisticsDao;
 import com.insoul.rental.dao.StallPaymentHistoryDao;
 import com.insoul.rental.dao.StallRenterDao;
 import com.insoul.rental.dao.StallUtilitiesPaymentHistoryDao;
@@ -55,18 +61,54 @@ public class BaseServiceImpl implements BaseService {
     @Resource
     protected SystemSettingDao systemSettingDao;
 
+    @Resource
+    protected StallFeeStatisticsDao stallFeeStatisticsDao;
+
+    @Resource
+    protected FlatFeeStatisticsDao flatFeeStatisticsDao;
+
+    @Resource
+    protected FeeStatisticsDao feeStatisticsDao;
+
     protected int getQuarter() {
         Calendar cal = Calendar.getInstance();
         int month = cal.get(Calendar.MONTH) + 1;
 
-        if (2 <= month && month <= 4) {
+        if (3 <= month && month <= 5) {
             return 1;
-        } else if (5 <= month && month <= 7) {
+        } else if (6 <= month && month <= 8) {
             return 2;
-        } else if (8 <= month && month <= 10) {
+        } else if (9 <= month && month <= 11) {
             return 3;
         } else {
             return 4;
         }
+    }
+
+    protected Map<String, Integer> getQuarterInfo(Date endDate) {
+        Map<String, Integer> settings = new HashMap<String, Integer>();
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(endDate);
+        int year = cal.get(Calendar.YEAR);
+        int month = cal.get(Calendar.MONTH) + 1;
+
+        settings.put("year", year);
+        settings.put("month", month);
+
+        if (3 <= month && month <= 5) {
+            settings.put("quarter", 1);
+        } else if (6 <= month && month <= 8) {
+            settings.put("quarter", 2);
+        } else if (9 <= month && month <= 11) {
+            settings.put("quarter", 3);
+        } else {
+            if (month != 12) {
+                settings.put("year", year - 1);
+            }
+            settings.put("quarter", 4);
+        }
+
+        return settings;
     }
 }

@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Repository;
@@ -12,7 +13,6 @@ import org.springframework.stereotype.Repository;
 import com.insoul.rental.criteria.PaginationCriteria;
 import com.insoul.rental.dao.FlatMeterPaymentHistoryDao;
 import com.insoul.rental.model.FlatMeterPaymentHistory;
-import com.insoul.rental.model.FlatMeterPaymentStatus;
 import com.insoul.rental.model.Pagination;
 
 @Repository
@@ -30,38 +30,12 @@ public class FlatMeterPaymentHistoryDaoImpl extends BaseDaoImpl implements FlatM
         args.add(flatMeterPaymentHistory.getQuarter());
         args.add(flatMeterPaymentHistory.getPrice());
         args.add(flatMeterPaymentHistory.getTotalPrice());
-        args.add(flatMeterPaymentHistory.getComment());
+        args.add(StringUtils.isNotBlank(flatMeterPaymentHistory.getComment()) ? flatMeterPaymentHistory.getComment()
+                : "");
         args.add(flatMeterPaymentHistory.getRecordDate());
         args.add(flatMeterPaymentHistory.getCreated());
 
         this.jdbcTemplate.update(sql.toString(), args.toArray());
-    }
-
-    @Override
-    public List<FlatMeterPaymentStatus> getFlatPaymentStatus(List<Integer> ids, int quarter) {
-        if (null == ids || ids.isEmpty()) {
-            return new ArrayList<FlatMeterPaymentStatus>();
-        }
-
-        String sql = "SELECT f.flat_id, fmph.flat_renter_id FROM flat f LEFT JOIN flat_meter_payment_history fmph ON f.flat_renter_id = fmph.flat_renter_id WHERE fmph.quarter = :quarter AND f.flat_id IN(:ids) GROUP BY f.flat_id";
-        MapSqlParameterSource parameters = new MapSqlParameterSource();
-        parameters.addValue("quarter", quarter);
-        parameters.addValue("ids", ids);
-        List<FlatMeterPaymentStatus> list = this.namedJdbcTemplate.query(sql, parameters,
-                new RowMapper<FlatMeterPaymentStatus>() {
-                    public FlatMeterPaymentStatus mapRow(ResultSet rs, int rowNumber) throws SQLException {
-                        FlatMeterPaymentStatus status = new FlatMeterPaymentStatus();
-                        status.setFlatId(rs.getInt("flat_id"));
-                        if (0 != rs.getInt("flat_renter_id")) {
-                            status.setHasPaidRent(true);
-                        } else {
-                            status.setHasPaidRent(false);
-                        }
-
-                        return status;
-                    }
-                });
-        return list;
     }
 
     @Override

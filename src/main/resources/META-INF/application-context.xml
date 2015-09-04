@@ -16,7 +16,7 @@
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="org.sqlite.JDBC" />
         <!-- <property name="url" value="jdbc:sqlite::resource:rental.db" /> -->
-        <!-- <property name="url" value="jdbc:sqlite:/home/www/git/rental/db/rental.db" /> -->
+        <!--<property name="url" value="jdbc:sqlite:D:/workspace/rental/db/rental.db" /> -->
         <property name="url" value="jdbc:sqlite:../../db/rental.db" />
     </bean>
 

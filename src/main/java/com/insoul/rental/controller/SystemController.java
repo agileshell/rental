@@ -26,9 +26,28 @@ public class SystemController extends BaseController {
 
         String watermeter = settings.get(SystemSettingPath.WATERMETER);
         model.addAttribute("watermeter", watermeter);
-
         String meter = settings.get(SystemSettingPath.METER);
         model.addAttribute("meter", meter);
+
+        String first_quarter_start = settings.get(SystemSettingPath.FIRST_QUARTER_START);
+        model.addAttribute("first_quarter_start", first_quarter_start);
+        String first_quarter_end = settings.get(SystemSettingPath.FIRST_QUARTER_END);
+        model.addAttribute("first_quarter_end", first_quarter_end);
+
+        String second_quarter_start = settings.get(SystemSettingPath.SECOND_QUARTER_START);
+        model.addAttribute("second_quarter_start", second_quarter_start);
+        String second_quarter_end = settings.get(SystemSettingPath.SECOND_QUARTER_END);
+        model.addAttribute("second_quarter_end", second_quarter_end);
+
+        String third_quarter_start = settings.get(SystemSettingPath.THIRD_QUARTER_START);
+        model.addAttribute("third_quarter_start", third_quarter_start);
+        String third_quarter_end = settings.get(SystemSettingPath.THIRD_QUARTER_END);
+        model.addAttribute("third_quarter_end", third_quarter_end);
+
+        String fourth_quarter_start = settings.get(SystemSettingPath.FOURTH_QUARTER_START);
+        model.addAttribute("fourth_quarter_start", fourth_quarter_start);
+        String fourth_quarter_end = settings.get(SystemSettingPath.FOURTH_QUARTER_END);
+        model.addAttribute("fourth_quarter_end", fourth_quarter_end);
 
         return "system/config";
     }

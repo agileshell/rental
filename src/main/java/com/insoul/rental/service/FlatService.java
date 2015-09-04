@@ -31,8 +31,12 @@ public interface FlatService {
 
     void payMeter(int flatId, UtilitiesPayment utilitiesPayment);
 
+    int confirmPay(int statisticId, String type);
+
     String getLastMeter(int flatRenterId);
 
     CurrentPage<FlatMeterPaymentHistoryListVO> listFlatMeterPaymentHistories(int flatId,
             PaginationRequest paginationRequest);
+
+    void generateFlatFeeStatistics(String year, int quarter);
 }

@@ -18,11 +18,13 @@ public class StallListVO {
 
     private String renterName;
 
-    private boolean hasPaidRent;
+    private int isPayRent;
 
-    private boolean hasPaidWatermeter;
+    private int isPayMeter;
 
-    private boolean hasPaidMeter;
+    private int isPayWater;
+
+    private int statisticId;
 
     public int getStallId() {
         return stallId;
@@ -80,28 +82,36 @@ public class StallListVO {
         this.renterName = renterName;
     }
 
-    public boolean isHasPaidRent() {
-        return hasPaidRent;
+    public int getIsPayRent() {
+        return isPayRent;
     }
 
-    public void setHasPaidRent(boolean hasPaidRent) {
-        this.hasPaidRent = hasPaidRent;
+    public void setIsPayRent(int isPayRent) {
+        this.isPayRent = isPayRent;
     }
 
-    public boolean isHasPaidWatermeter() {
-        return hasPaidWatermeter;
+    public int getIsPayMeter() {
+        return isPayMeter;
     }
 
-    public void setHasPaidWatermeter(boolean hasPaidWatermeter) {
-        this.hasPaidWatermeter = hasPaidWatermeter;
+    public void setIsPayMeter(int isPayMeter) {
+        this.isPayMeter = isPayMeter;
     }
 
-    public boolean isHasPaidMeter() {
-        return hasPaidMeter;
+    public int getIsPayWater() {
+        return isPayWater;
     }
 
-    public void setHasPaidMeter(boolean hasPaidMeter) {
-        this.hasPaidMeter = hasPaidMeter;
+    public void setIsPayWater(int isPayWater) {
+        this.isPayWater = isPayWater;
+    }
+
+    public int getStatisticId() {
+        return statisticId;
+    }
+
+    public void setStatisticId(int statisticId) {
+        this.statisticId = statisticId;
     }
 
 }

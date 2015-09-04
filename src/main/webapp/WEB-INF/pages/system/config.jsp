@@ -5,6 +5,7 @@
     <title>小李庄农贸管理系统</title>
 
     <script src="resources/system/config.js"></script>
+     <script src="<%=request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath()+"/"%>resources/libs/My97DatePicker/WdatePicker.js"></script>
 </head>
 
 <!-- Bread line. -->
@@ -41,6 +42,62 @@
                                 <i class="fa fa-plug"></i>
                             </div>
                             <input name="meter" type="text" class="form-control" id="meter" value="${meter}" placeholder="电费/度">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="first_quarter_start">第一季度<span class="required-flag">*</span></label>
+                        <div class="input-group" style="width: 60%;">
+                            <div class="input-group-addon">
+                                <i class="fa fa-long-arrow-up"></i>
+                            </div>
+                            <input name="first_quarter_start" type="text" class="form-control" id="first_quarter_start" value="${first_quarter_start}" placeholder="起始" onFocus="WdatePicker({startDate:'%y-%M-%d',dateFmt:'MM-dd'})">
+                             <div class="input-group-addon">
+                                <i class="fa fa-long-arrow-down"></i>
+                            </div>
+                            <input name="first_quarter_end" type="text" class="form-control" id="first_quarter_end" value="${first_quarter_end}" placeholder="终止" onFocus="WdatePicker({startDate:'%y-%M-%d',dateFmt:'MM-dd'})">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="second_quarter_start">第二季度<span class="required-flag">*</span></label>
+                        <div class="input-group" style="width: 60%;">
+                            <div class="input-group-addon">
+                                <i class="fa fa-long-arrow-up"></i>
+                            </div>
+                            <input name="second_quarter_start" type="text" class="form-control" id="second_quarter_start" value="${second_quarter_start}" placeholder="起始" onFocus="WdatePicker({startDate:'%y-%M-%d',dateFmt:'MM-dd'})">
+                             <div class="input-group-addon">
+                                <i class="fa fa-long-arrow-down"></i>
+                            </div>
+                            <input name="second_quarter_end" type="text" class="form-control" id="second_quarter_end" value="${second_quarter_end}" placeholder="终止" onFocus="WdatePicker({startDate:'%y-%M-%d',dateFmt:'MM-dd'})">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="third_quarter_start">第三季度<span class="required-flag">*</span></label>
+                        <div class="input-group" style="width: 60%;">
+                            <div class="input-group-addon">
+                                <i class="fa fa-long-arrow-up"></i>
+                            </div>
+                            <input name="third_quarter_start" type="text" class="form-control" id="third_quarter_start" value="${third_quarter_start}" placeholder="起始" onFocus="WdatePicker({startDate:'%y-%M-%d',dateFmt:'MM-dd'})">
+                             <div class="input-group-addon">
+                                <i class="fa fa-long-arrow-down"></i>
+                            </div>
+                            <input name="third_quarter_end" type="text" class="form-control" id="third_quarter_end" value="${third_quarter_end}" placeholder="终止" onFocus="WdatePicker({startDate:'%y-%M-%d',dateFmt:'MM-dd'})">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fourth_quarter_start">第四季度<span class="required-flag">*</span></label>
+                        <div class="input-group" style="width: 60%;">
+                            <div class="input-group-addon">
+                                <i class="fa fa-long-arrow-up"></i>
+                            </div>
+                            <input name="fourth_quarter_start" type="text" class="form-control" id="fourth_quarter_start" value="${fourth_quarter_start}" placeholder="起始" onFocus="WdatePicker({startDate:'%y-%M-%d',dateFmt:'MM-dd'})">
+                             <div class="input-group-addon">
+                                <i class="fa fa-long-arrow-down"></i>
+                            </div>
+                            <input name="fourth_quarter_end" type="text" class="form-control" id="fourth_quarter_end" value="${fourth_quarter_end}" placeholder="终止" onFocus="WdatePicker({startDate:'%y-%M-%d',dateFmt:'MM-dd'})">
                         </div>
                     </div>
                 </div>

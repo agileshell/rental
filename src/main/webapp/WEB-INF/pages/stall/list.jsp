@@ -87,34 +87,52 @@
                             <td>${stall.monthPrice}</td>
                             <td>${stall.renterName}</td>
                             <td>
-                                <span class="label ${stall.hasPaidRent == true ? 'label-success' : 'label-danger'}">
-                                    ${stall.hasPaidRent == true ? '已缴纳' : '未缴纳'}
+                                <span class="label ${stall.isPayRent == 2 ? 'label-success' : 'label-danger'}">
+                                    ${stall.isPayRent == 2 ? '已缴纳' : '未缴纳'}
                                 </span>
                                 <c:if test="${stall.renterId >0 }">
-                                    &nbsp;&nbsp;
-                                    <a title="缴纳租金" href="stall/payRentPage?stallId=${stall.stallId}">缴纳租金</a>
+                                    <c:if test="${stall.isPayRent == 0 }">
+                                        &nbsp;&nbsp;
+                                        <a title="租金单" href="stall/payRentPage?stallId=${stall.stallId}">租金单</a>
+                                    </c:if>
+                                    <c:if test="${stall.isPayRent == 1 }">
+                                        &nbsp;&nbsp;
+                                        <a title="确认已缴费" class="confirmPay" data-statistic="${stall.statisticId}" data-type="rent" href="javascript:void(0)">确认已缴费</a>
+                                    </c:if>
                                 </c:if>
                                     &nbsp;&nbsp;
                                     <a title="缴纳历史" href="stall/listRentpaymentHistory?stallId=${stall.stallId}">缴纳历史</a>
                             </td>
                             <td>
-                                <span class="label ${stall.hasPaidWatermeter == true ? 'label-success' : 'label-danger'}">
-                                    ${stall.hasPaidWatermeter == true ? '已缴纳' : '未缴纳'}
+                                <span class="label ${stall.isPayWater == 2 ? 'label-success' : 'label-danger'}">
+                                    ${stall.isPayMeter == 2 ? '已缴纳' : '未缴纳'}
                                 </span>
                                 <c:if test="${stall.renterId >0 }">
-                                    &nbsp;&nbsp;
-                                    <a title="缴纳水费" href="stall/payWatermeterPage?stallId=${stall.stallId}">缴纳水费</a>
+                                    <c:if test="${stall.isPayWater == 0 }">
+                                        &nbsp;&nbsp;
+                                        <a title="水费单" href="stall/payWatermeterPage?stallId=${stall.stallId}">水费单</a>
+                                    </c:if>
+                                    <c:if test="${stall.isPayWater == 1 }">
+                                        &nbsp;&nbsp;
+                                        <a title="确认已缴费" class="confirmPay" data-statistic="${stall.statisticId}" data-type="water" href="javascript:void(0)">确认已缴费</a>
+                                    </c:if>
                                 </c:if>
                                     &nbsp;&nbsp;
                                     <a title="缴纳历史" href="stall/listWaterpaymentHistory?stallId=${stall.stallId}">缴纳历史</a>
                             </td>
                             <td>
-                                <span class="label ${stall.hasPaidMeter == true ? 'label-success' : 'label-danger'}">
-                                    ${stall.hasPaidMeter == true ? '已缴纳' : '未缴纳'}
+                                <span class="label ${stall.isPayMeter == 2 ? 'label-success' : 'label-danger'}">
+                                    ${stall.isPayMeter == 2 ? '已缴纳' : '未缴纳'}
                                 </span>
                                 <c:if test="${stall.renterId >0 }">
-                                    &nbsp;&nbsp;
-                                    <a title="缴纳电费" href="stall/payMeterPage?stallId=${stall.stallId}">缴纳电费</a>
+                                    <c:if test="${stall.isPayMeter == 0 }">
+                                        &nbsp;&nbsp;
+                                        <a title="电费单" href="stall/payMeterPage?stallId=${stall.stallId}">电费单</a>
+                                    </c:if>
+                                    <c:if test="${stall.isPayMeter == 1 }">
+                                        &nbsp;&nbsp;
+                                        <a title="确认已缴费" class="confirmPay" data-statistic="${stall.statisticId}" data-type="meter" href="javascript:void(0)">确认已缴费</a>
+                                    </c:if>
                                 </c:if>
                                     &nbsp;&nbsp;
                                     <a title="缴纳历史" href="stall/listMeterpaymentHistory?stallId=${stall.stallId}">缴纳历史</a>

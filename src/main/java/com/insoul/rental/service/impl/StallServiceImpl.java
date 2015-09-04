@@ -1,6 +1,7 @@
 package com.insoul.rental.service.impl;
 
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -11,14 +12,14 @@ import org.springframework.stereotype.Service;
 
 import com.insoul.rental.criteria.PaginationCriteria;
 import com.insoul.rental.criteria.StallCriteria;
+import com.insoul.rental.model.FeeStatistics;
 import com.insoul.rental.model.Pagination;
 import com.insoul.rental.model.Renter;
 import com.insoul.rental.model.Stall;
+import com.insoul.rental.model.StallFeeStatistics;
 import com.insoul.rental.model.StallPaymentHistory;
-import com.insoul.rental.model.StallPaymentStatus;
 import com.insoul.rental.model.StallRenter;
 import com.insoul.rental.model.StallUtilitiesPaymentHistory;
-import com.insoul.rental.model.StallUtilitiesPaymentStatus;
 import com.insoul.rental.model.Subarea;
 import com.insoul.rental.service.StallService;
 import com.insoul.rental.vo.CurrentPage;
@@ -254,14 +255,12 @@ public class StallServiceImpl extends BaseServiceImpl implements StallService {
             subareaIdSubareaNameMap.put(subarea.getSubareaId(), subarea.getName());
         }
 
-        Map<Integer, StallListVO> stallIdStallMap = new HashMap<Integer, StallListVO>();
-        List<Integer> stallIds = new ArrayList<Integer>();
+        Map<Integer, StallListVO> stallMap = new HashMap<Integer, StallListVO>();
+        List<Integer> stallRenterIds = new ArrayList<Integer>();
 
         for (Stall stall : stalls) {
-            int stallId = stall.getStallId();
-
             StallListVO vo = new StallListVO();
-            vo.setStallId(stallId);
+            vo.setStallId(stall.getStallId());
             vo.setSubarea(subareaIdSubareaNameMap.get(stall.getSubareaId()));
             vo.setName(stall.getName());
             vo.setMonthPrice(stall.getMonthPrice());
@@ -271,31 +270,24 @@ public class StallServiceImpl extends BaseServiceImpl implements StallService {
 
             stallVOs.add(vo);
 
-            stallIdStallMap.put(stallId, vo);
-
-            stallIds.add(stallId);
+            int stallRenterId = stall.getStallRenterId();
+            stallMap.put(stallRenterId, vo);
+            stallRenterIds.add(stallRenterId);
         }
 
-        int quarter = getQuarter();
+        Map<String, Integer> quarterInfo = getQuarterInfo(new Date());
+        int quarter = quarterInfo.get("quarter");
+        String year = quarterInfo.get("year") + "";
 
-        List<StallPaymentStatus> stallPaymentStatuses = stallPaymentHistoryDao.getStallPaymentStatus(stallIds, quarter);
-        for (StallPaymentStatus stallPaymentStatus : stallPaymentStatuses) {
-            if (stallIdStallMap.containsKey(stallPaymentStatus.getStallId())) {
-                StallListVO stallListVO = stallIdStallMap.get(stallPaymentStatus.getStallId());
-                stallListVO.setHasPaidRent(stallPaymentStatus.isHasPaidRent());
-            }
-        }
-
-        List<StallUtilitiesPaymentStatus> StallUtilitiesPaymentStatuses = stallUtilitiesPaymentHistoryDao
-                .getStallPaymentStatus(stallIds, quarter);
-        for (StallUtilitiesPaymentStatus stallUtilitiesPaymentStatus : StallUtilitiesPaymentStatuses) {
-            if (stallIdStallMap.containsKey(stallUtilitiesPaymentStatus.getStallId())) {
-                StallListVO stallListVO = stallIdStallMap.get(stallUtilitiesPaymentStatus.getStallId());
-                if (1 == stallUtilitiesPaymentStatus.getType()) {
-                    stallListVO.setHasPaidWatermeter(stallUtilitiesPaymentStatus.isHasPaid());
-                } else if (2 == stallUtilitiesPaymentStatus.getType()) {
-                    stallListVO.setHasPaidMeter(stallUtilitiesPaymentStatus.isHasPaid());
-                }
+        List<StallFeeStatistics> stallFees = stallFeeStatisticsDao
+                .findStallFeeStatistics(stallRenterIds, year, quarter);
+        for (StallFeeStatistics stallFee : stallFees) {
+            if (stallMap.containsKey(stallFee.getStallRenterId())) {
+                StallListVO stallListVO = stallMap.get(stallFee.getStallRenterId());
+                stallListVO.setIsPayRent(stallFee.getIsPayRent());
+                stallListVO.setIsPayMeter(stallFee.getIsPayMeter());
+                stallListVO.setIsPayWater(stallFee.getIsPayWater());
+                stallListVO.setStatisticId(stallFee.getId());
             }
         }
 
@@ -309,17 +301,60 @@ public class StallServiceImpl extends BaseServiceImpl implements StallService {
             return;
         }
 
+        Map<String, Integer> quarterInfo = getQuarterInfo(rentPayment.getEndDate());
+        int quarter = quarterInfo.get("quarter");
+        String year = quarterInfo.get("year") + "";
+        String month = quarterInfo.get("month") + "";
+
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+
         StallPaymentHistory stallPaymentHistory = new StallPaymentHistory();
         stallPaymentHistory.setStallRenterId(stall.getStallRenterId());
         stallPaymentHistory.setStartDate(rentPayment.getStartDate());
         stallPaymentHistory.setEndDate(rentPayment.getEndDate());
         stallPaymentHistory.setTotalPrice(rentPayment.getTotalPrice());
         stallPaymentHistory.setComment(rentPayment.getComment());
-        stallPaymentHistory.setCreated(new Timestamp(System.currentTimeMillis()));
-
-        stallPaymentHistory.setQuarter(getQuarter());
+        stallPaymentHistory.setCreated(now);
+        stallPaymentHistory.setQuarter(quarter);
 
         stallPaymentHistoryDao.create(stallPaymentHistory);
+
+        StallFeeStatistics statistic = stallFeeStatisticsDao.getStallFeeStatistic(stall.getStallRenterId(), year,
+                quarter);
+        if (null != statistic) {
+            statistic.setIsPayRent(1);
+            statistic.setRentFee(rentPayment.getTotalPrice());
+            statistic.setTotalFee(statistic.getTotalFee() + rentPayment.getTotalPrice());
+            statistic.setUpdated(now);
+
+            stallFeeStatisticsDao.update(statistic);
+        } else {
+            statistic = new StallFeeStatistics();
+            statistic.setStallRenterId(stall.getStallRenterId());
+            statistic.setYear(year);
+            statistic.setQuarter(quarter);
+
+            statistic.setIsPayRent(1);
+            statistic.setRentFee(rentPayment.getTotalPrice());
+            statistic.setTotalFee(rentPayment.getTotalPrice());
+            statistic.setCreated(now);
+
+            stallFeeStatisticsDao.create(statistic);
+        }
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String recordDate = sdf.format(now);
+        FeeStatistics feeStatistic = feeStatisticsDao.getFeeStatistic(recordDate);
+        if (null == feeStatistic) {
+            feeStatistic = new FeeStatistics();
+            feeStatistic.setRecordDate(recordDate);
+            feeStatistic.setYear(year);
+            feeStatistic.setMonth(month);
+            feeStatistic.setQuarter(quarter);
+            feeStatistic.setCreated(now);
+
+            feeStatisticsDao.create(feeStatistic);
+        }
     }
 
     @Override
@@ -338,6 +373,12 @@ public class StallServiceImpl extends BaseServiceImpl implements StallService {
             return;
         }
 
+        Map<String, Integer> quarterInfo = getQuarterInfo(utilitiesPayment.getRecordDate());
+        int quarter = quarterInfo.get("quarter");
+        String year = quarterInfo.get("year") + "";
+        String month = quarterInfo.get("month") + "";
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+
         StallUtilitiesPaymentHistory stallUtilitiesPaymentHistory = new StallUtilitiesPaymentHistory();
         stallUtilitiesPaymentHistory.setStallRenterId(stall.getStallRenterId());
         stallUtilitiesPaymentHistory.setFirstRecord(utilitiesPayment.getFirstRecord());
@@ -346,12 +387,109 @@ public class StallServiceImpl extends BaseServiceImpl implements StallService {
         stallUtilitiesPaymentHistory.setTotalPrice(utilitiesPayment.getTotalPrice());
         stallUtilitiesPaymentHistory.setComment(utilitiesPayment.getComment());
         stallUtilitiesPaymentHistory.setRecordDate(utilitiesPayment.getRecordDate());
-        stallUtilitiesPaymentHistory.setCreated(new Timestamp(System.currentTimeMillis()));
-
+        stallUtilitiesPaymentHistory.setCreated(now);
         stallUtilitiesPaymentHistory.setType(type);
-        stallUtilitiesPaymentHistory.setQuarter(getQuarter());
+        stallUtilitiesPaymentHistory.setQuarter(quarter);
 
         stallUtilitiesPaymentHistoryDao.create(stallUtilitiesPaymentHistory);
+
+        StallFeeStatistics statistic = stallFeeStatisticsDao.getStallFeeStatistic(stall.getStallRenterId(), year,
+                quarter);
+        if (null != statistic) {
+            if (type == 1) {
+                statistic.setIsPayWater(1);
+                statistic.setWaterFee(utilitiesPayment.getTotalPrice());
+            } else {
+                statistic.setIsPayMeter(1);
+                statistic.setMeterFee(utilitiesPayment.getTotalPrice());
+            }
+            statistic.setTotalFee(statistic.getTotalFee() + utilitiesPayment.getTotalPrice());
+            statistic.setUpdated(now);
+
+            stallFeeStatisticsDao.update(statistic);
+        } else {
+            statistic = new StallFeeStatistics();
+            statistic.setStallRenterId(stall.getStallRenterId());
+            statistic.setYear(year);
+            statistic.setQuarter(quarter);
+
+            if (type == 1) {
+                statistic.setIsPayWater(1);
+                statistic.setWaterFee(utilitiesPayment.getTotalPrice());
+            } else {
+                statistic.setIsPayMeter(1);
+                statistic.setMeterFee(utilitiesPayment.getTotalPrice());
+            }
+            statistic.setTotalFee(utilitiesPayment.getTotalPrice());
+            statistic.setCreated(now);
+
+            stallFeeStatisticsDao.create(statistic);
+        }
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String recordDate = sdf.format(now);
+        FeeStatistics feeStatistic = feeStatisticsDao.getFeeStatistic(recordDate);
+        if (null == feeStatistic) {
+            feeStatistic = new FeeStatistics();
+            feeStatistic.setRecordDate(recordDate);
+            feeStatistic.setYear(year);
+            feeStatistic.setMonth(month);
+            feeStatistic.setQuarter(quarter);
+            feeStatistic.setCreated(now);
+
+            feeStatisticsDao.create(feeStatistic);
+        }
+    }
+
+    @Override
+    public int confirmPay(int statisticId, String type) {
+        StallFeeStatistics statistic = stallFeeStatisticsDao.getStallFeeStatistic(statisticId);
+        if (null == statistic) {
+            return 0;
+        }
+
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+
+        if (type.equals("rent")) {
+            statistic.setIsPayRent(2);
+            if (statistic.getIsPayMeter() == 2 && statistic.getIsPayWater() == 2) {
+                statistic.setIsPayAll(2);
+            }
+        } else if (type.equals("meter")) {
+            statistic.setIsPayMeter(2);
+            if (statistic.getIsPayRent() == 2 && statistic.getIsPayWater() == 2) {
+                statistic.setIsPayAll(2);
+            }
+        } else if (type.equals("water")) {
+            statistic.setIsPayWater(2);
+            if (statistic.getIsPayRent() == 2 && statistic.getIsPayMeter() == 2) {
+                statistic.setIsPayAll(2);
+            }
+        }
+        statistic.setUpdated(now);
+        stallFeeStatisticsDao.update(statistic);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String recordDate = sdf.format(now);
+        FeeStatistics feeStatistic = feeStatisticsDao.getFeeStatistic(recordDate);
+        if (null != feeStatistic) {
+            if (type.equals("rent")) {
+                feeStatistic.setStallRentFee(feeStatistic.getStallWaterFee() + statistic.getRentFee());
+                feeStatistic.setTotalFee(feeStatistic.getTotalFee() + statistic.getRentFee());
+            } else if (type.equals("meter")) {
+                feeStatistic.setStallMeterFee(feeStatistic.getStallMeterFee() + statistic.getMeterFee());
+                feeStatistic.setTotalFee(feeStatistic.getTotalFee() + statistic.getMeterFee());
+            } else if (type.equals("water")) {
+                feeStatistic.setStallWaterFee(feeStatistic.getStallWaterFee() + statistic.getWaterFee());
+                feeStatistic.setTotalFee(feeStatistic.getTotalFee() + statistic.getWaterFee());
+            }
+
+            feeStatistic.setUpdated(now);
+
+            feeStatisticsDao.update(feeStatistic);
+        }
+
+        return 1;
     }
 
     @Override
@@ -458,5 +596,21 @@ public class StallServiceImpl extends BaseServiceImpl implements StallService {
         }
 
         return stallUtilitiesPaymentHistoryListVOs;
+    }
+
+    @Override
+    public void generateStallFeeStatistics(String year, int quarter) {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+
+        List<Integer> stallRenterIds = stallFeeStatisticsDao.findStallRenterIds(year, quarter);
+        for (Integer stallRenterId : stallRenterIds) {
+            StallFeeStatistics statistic = new StallFeeStatistics();
+            statistic.setStallRenterId(stallRenterId);
+            statistic.setYear(year);
+            statistic.setQuarter(quarter);
+            statistic.setCreated(now);
+
+            stallFeeStatisticsDao.create(statistic);
+        }
     }
 }

@@ -31,6 +31,8 @@ public interface StallService extends BaseService {
 
     void payMeter(int stallId, UtilitiesPayment utilitiesPayment);
 
+    int confirmPay(int statisticId, String type);
+
     String getLastWatermeter(int stallRenterId);
 
     String getLastMeter(int stallRenterId);
@@ -39,5 +41,7 @@ public interface StallService extends BaseService {
 
     CurrentPage<StallUtilitiesPaymentHistoryListVO> listStallUtilitiesPaymentHistory(int stallId, int type,
             PaginationRequest paginationRequest);
+
+    void generateStallFeeStatistics(String year, int quarter);
 
 }
